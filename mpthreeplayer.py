@@ -1,15 +1,22 @@
 import tkinter as tk
 import fnmatch
 import os
+import pygame.mixer
 from pygame import mixer
+from tkinter import filedialog
+from tkinter import *
+
+from snd.sound import Sound
+
+# import vlc
+
 
 canvas = tk.Tk()
-canvas.title("Music Player")
+canvas.title("Mango Player")
 canvas.geometry("600x800")
 canvas.config(bg='black')
-
-rootpath = 'D:\\Music'
 pattern = "*.mp3"
+folder_path = StringVar()
 
 mixer.init()
 
@@ -18,11 +25,24 @@ stop_img = tk.PhotoImage(file="img/stop_img.png")
 play_img = tk.PhotoImage(file="img/play_img.png")
 pause_img = tk.PhotoImage(file="img/pause_img.png")
 next_img = tk.PhotoImage(file="img/next_img.png")
+dir_img = tk.PhotoImage(file="img/dir_img.png")
+
+
+def browse_button():
+    # Allow user to select a directory and store it in global var
+    # called folder_path
+    global folder_path
+    dir_select = filedialog.askdirectory()
+    folder_path.set(dir_select)
+    return dir_select
+
+
+path = browse_button()
 
 
 def select():
     label.config(text=listBox.get("anchor"))
-    mixer.music.load(rootpath + "\\" + listBox.get("anchor"))
+    mixer.music.load(path + "\\" + listBox.get("anchor"))
     mixer.music.play()
 
 
@@ -37,7 +57,7 @@ def play_next():
     next_song_name = listBox.get(next_song)
     label.config(text=next_song_name)
 
-    mixer.music.load(rootpath + "\\" + next_song_name)
+    mixer.music.load(path + "\\" + next_song_name)
     mixer.music.play()
 
     listBox.select_clear(0, 'end')
@@ -51,7 +71,7 @@ def play_prev():
     next_song_name = listBox.get(next_song)
     label.config(text=next_song_name)
 
-    mixer.music.load(rootpath + "\\" + next_song_name)
+    mixer.music.load(path + "\\" + next_song_name)
     mixer.music.play()
 
     listBox.select_clear(0, 'end')
@@ -92,7 +112,22 @@ pauseButton.pack(pady=15, in_=top, side='left')
 nextButton = tk.Button(canvas, text='Next', image=next_img, bg='black', borderwidth=0, command=play_next)
 nextButton.pack(pady=15, in_=top, side='left')
 
-for root, dirs, files in os.walk(rootpath):
+dirButton = tk.Button(canvas, text='Directory', image=dir_img, bg='black', borderwidth=0, command=browse_button)
+dirButton.pack(pady=15, in_=top, side='left')
+
+
+def show_value(i):
+    i = vol.get()
+    pygame.mixer.music.set_volume(i)
+    Sound.volume_set(i)
+
+
+vol = Scale(canvas, from_=0, to=100, orient=VERTICAL, resolution=1, command=show_value)
+vol.place(x=25, y=310)
+vol.set(100)
+vol.pack(pady=15, in_=top, side='left')
+
+for root, dirs, files in os.walk(path):
     for filename in fnmatch.filter(files, pattern):
         listBox.insert('end', filename)
 
